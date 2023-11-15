@@ -16,14 +16,14 @@ describe('dedupeImports', () => {
       [
         {
           name: 'foo',
-          from: 'module1'
+          from: 'module1',
         },
         {
           name: 'foo',
-          from: 'module2'
-        }
+          from: 'module2',
+        },
       ],
-      warnFn
+      warnFn,
     )).toMatchInlineSnapshot(`
       [
         {
@@ -33,7 +33,7 @@ describe('dedupeImports', () => {
       ]
     `)
 
-    expect(warnMsg).toMatchInlineSnapshot('"Duplicated imports \\"foo\\", the one from \\"module1\\" has been ignored"')
+    expect(warnMsg).toMatchInlineSnapshot('"Duplicated imports \\"foo\\", the one from \\"module1\\" has been ignored and \\"module2\\" is used"')
   })
 
   it('respect explit priority', () => {
@@ -41,20 +41,20 @@ describe('dedupeImports', () => {
       [
         {
           name: 'foo',
-          from: 'module1'
+          from: 'module1',
         },
         {
           name: 'foo',
           from: 'module2',
-          priority: 2
+          priority: 2,
         },
         {
           name: 'foo',
           from: 'module3',
-          priority: 1
-        }
+          priority: 1,
+        },
       ],
-      warnFn
+      warnFn,
     )).toMatchInlineSnapshot(`
       [
         {
@@ -72,14 +72,14 @@ describe('dedupeImports', () => {
         {
           name: 'foo',
           from: 'module1',
-          disabled: true
+          disabled: true,
         },
         {
           name: 'foo',
-          from: 'module2'
-        }
+          from: 'module2',
+        },
       ],
-      warnFn
+      warnFn,
     )).toMatchInlineSnapshot(`
       [
         {
@@ -102,14 +102,14 @@ describe('dedupeImports', () => {
       [
         {
           name: 'foo',
-          from: 'module1'
+          from: 'module1',
         },
         {
           name: 'foo',
-          from: 'module1'
-        }
+          from: 'module1',
+        },
       ],
-      warnFn
+      warnFn,
     )).toMatchInlineSnapshot(`
       [
         {

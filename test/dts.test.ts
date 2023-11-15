@@ -1,13 +1,12 @@
-
-import { expect, test } from 'vitest'
+import { expect, it } from 'vitest'
 import { createUnimport } from '../src'
 
-test('dts', async () => {
+it('dts', async () => {
   const cwd = process.cwd().replace(/\\/g, '/')
   const { generateTypeDeclarations, init } = createUnimport({
     imports: [
       { name: 'default', from: 'default', as: 'customDefault' },
-      { name: 'foobar', from: 'foobar', as: 'foobar' }
+      { name: 'foobar', from: 'foobar', as: 'foobar' },
     ],
     presets: [
       {
@@ -19,21 +18,21 @@ test('dts', async () => {
           'toRefs',
           {
             name: 'Ref',
-            type: true
+            type: true,
           },
           {
             name: 'ComputedRef',
-            type: true
-          }
-        ]
+            type: true,
+          },
+        ],
       },
       {
         from: 'three',
-        imports: [['*', 'THREE']]
+        imports: [['*', 'THREE']],
       },
       {
         from: 'react',
-        imports: ['useState', 'useEffect', 'useRef']
+        imports: ['useState', 'useEffect', 'useRef'],
       },
       {
         from: 'jquery',
@@ -41,28 +40,29 @@ test('dts', async () => {
           '$',
           {
             name: 'JQuery',
-            type: true
-          }
-        ]
-      }
+            type: true,
+          },
+        ],
+      },
     ],
     dirs: [
-      './playground/composables/**'
+      './playground/composables/**',
     ],
     dirsScanOptions: {
-      cwd
-    }
+      cwd,
+    },
   })
 
   await init()
 
   expect(
-    (await generateTypeDeclarations()).replaceAll(cwd, '<root>')
+    (await generateTypeDeclarations()).replaceAll(cwd, '<root>'),
   )
     .toMatchInlineSnapshot(`
       "export {}
       declare global {
         const $: typeof import('jquery')['$']
+        const PascalCased: typeof import('<root>/playground/composables/PascalCased')['PascalCased']
         const THREE: typeof import('three')
         const bar: typeof import('<root>/playground/composables/nested/bar/index')['bar']
         const bump: typeof import('<root>/playground/composables/index')['bump']
@@ -86,6 +86,8 @@ test('dts', async () => {
         const useEffect: typeof import('react')['useEffect']
         const useRef: typeof import('react')['useRef']
         const useState: typeof import('react')['useState']
+        const vanillaA: typeof import('<root>/playground/composables/vanilla.js')['vanillaA']
+        const vanillaB: typeof import('<root>/playground/composables/vanilla.js')['vanillaB']
       }
       // for type re-export
       declare global {
@@ -93,6 +95,12 @@ test('dts', async () => {
         export type { Ref, ComputedRef } from 'vue'
         // @ts-ignore
         export type { JQuery } from 'jquery'
+        // @ts-ignore
+        export type { CustomType1, CustomInterface1 } from '<root>/playground/composables/index.ts'
+        // @ts-ignore
+        export type { CustomType2 } from '<root>/playground/composables/nested/bar/sub/index.ts'
+        // @ts-ignore
+        export type { vanillaTypeOnlyFunction, VanillaInterface, VanillaInterfaceAlias } from '<root>/playground/composables/vanilla.d.ts'
       }"
     `)
 })

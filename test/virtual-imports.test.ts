@@ -1,26 +1,26 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { createUnimport } from '../src'
 
 describe('virtual imports', () => {
   const ctx = createUnimport({
     imports: [
-      { from: 'foo', name: 'foo', as: 'bar' }
+      { from: 'foo', name: 'foo', as: 'bar' },
     ],
     presets: ['vue'],
-    virtualImports: ['#imports']
+    virtualImports: ['#imports'],
   })
 
-  test('inject', async () => {
+  it('inject', async () => {
     const fixture = `
   import { watch } from 'fs'
   import { ref, computed, watchEffect as effect,
     bar as BAR } from '#imports'
-  
+
   const a = ref(1)
   const b = shallowRef(2) // auto import
-  
+
   effect(() => {})
-  
+
   watch('file')
     `.trim()
 
@@ -42,14 +42,14 @@ describe('virtual imports', () => {
         import { watch } from 'fs'
           const a = ref(1)
           const b = shallowRef(2) // auto import
-          
+
           effect(() => {})
-          
+
           watch('file')"
       `)
   })
 
-  test('virtual imports only', async () => {
+  it('virtual imports only', async () => {
     const fixture = `
 import { ref } from '#imports'
 const a = computed()
@@ -61,12 +61,43 @@ const a = computed()
       `)
   })
 
-  test('error', () => {
+  it('non-exist', async () => {
     const fixture = `
-  import { notExist } from '#imports'
+import { notExist } from '#imports'
     `.trim()
 
-    expect(ctx.injectImports(fixture)).rejects
+    await expect(ctx.injectImports(fixture)).rejects
       .toMatchInlineSnapshot('[Error: [unimport] failed to find "notExist" imported from "#imports"]')
+  })
+
+  it('comment false-positive', async () => {
+    const fixture = `
+// import { } from '#imports';
+
+const a = ref(1)
+    `.trim()
+
+    expect((await ctx.injectImports(fixture, undefined, { autoImport: false })).code)
+      .toMatchInlineSnapshot(`
+        "// import { } from '#imports';
+
+        const a = ref(1)"
+      `)
+  })
+
+  // https://github.com/unocss/unocss/issues/2938
+  it('side-effects', async () => {
+    const fixture = `
+import 'uno.css'
+import { ref } from '#imports';
+export default ref(() => {})
+        `.trim()
+
+    expect((await ctx.injectImports(fixture, undefined, { autoImport: false })).code)
+      .toMatchInlineSnapshot(`
+        "import { ref } from 'vue';
+        import 'uno.css'
+        export default ref(() => {})"
+      `)
   })
 })

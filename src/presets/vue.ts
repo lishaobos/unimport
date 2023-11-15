@@ -1,4 +1,4 @@
-import { InlinePreset } from '../types'
+import type { InlinePreset } from '../types'
 import { defineUnimportPreset } from '../utils'
 
 export const CommonCompositionAPI: InlinePreset['imports'] = [
@@ -36,6 +36,7 @@ export const CommonCompositionAPI: InlinePreset['imports'] = [
   'toRaw',
   'toRef',
   'toRefs',
+  'toValue',
   'unref',
   'watch',
   'watchEffect',
@@ -64,11 +65,15 @@ export const CommonCompositionAPI: InlinePreset['imports'] = [
     'Component',
     'ComponentPublicInstance',
     'ComputedRef',
+    'ExtractDefaultPropTypes',
+    'ExtractPropTypes',
+    'ExtractPublicPropTypes',
     'InjectionKey',
     'PropType',
     'Ref',
-    'VNode'
-  ].map(name => ({ name, type: true }))
+    'VNode',
+    'WritableComputedRef',
+  ].map(name => ({ name, type: true })),
 ]
 
 export default defineUnimportPreset({
@@ -80,6 +85,6 @@ export default defineUnimportPreset({
     'onRenderTracked',
     'onRenderTriggered',
     'resolveComponent',
-    'useCssVars'
-  ]
+    'useCssVars',
+  ],
 })

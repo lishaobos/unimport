@@ -1,5 +1,4 @@
-/* eslint-disable no-use-before-define */
-import MagicString from 'magic-string'
+import type MagicString from 'magic-string'
 import type { BuiltinPresetName } from './presets'
 
 export type ModuleId = string
@@ -15,6 +14,8 @@ export interface ImportCommon {
   priority?: number
   /** If this import is disabled */
   disabled?: boolean
+  /** Won't output import in declaration file if true */
+  dtsDisabled?: boolean
   /**
    * Metadata of the import
    */
@@ -27,9 +28,13 @@ export interface ImportCommon {
     [key: string]: any
   }
   /**
-   * If this import is a type import
+   * If this import is a pure type import
    */
   type?: boolean
+  /**
+   * Using this as the from when generating type declarations
+   */
+  typeFrom?: ModuleId
 }
 
 export interface Import extends ImportCommon {
@@ -75,6 +80,8 @@ export interface PackagePreset {
 export type Preset = InlinePreset | PackagePreset
 
 export interface UnimportContext {
+  version: string
+
   options: Partial<UnimportOptions>
   staticImports: Import[]
   dynamicImports: Import[]
@@ -91,7 +98,7 @@ export interface UnimportContext {
 }
 
 export interface InjectionUsageRecord {
-  import: Import,
+  import: Import
   count: number
   moduleIds: string[]
 }
@@ -163,7 +170,7 @@ export interface UnimportOptions extends Pick<InjectImportsOptions, 'injectAtEnd
   /**
    * Custom resolver to auto import id
    */
-  resolveId?: (id: string, importee?:string) => Thenable<string | void>
+  resolveId?: (id: string, importee?: string) => Thenable<string | void>
 
   /**
    * Custom magic comments to be opt-out for auto import, per file/module
@@ -199,6 +206,13 @@ export interface ScanDirExportsOptions {
    * Custom function to filter scanned files
    */
   fileFilter?: (file: string) => boolean
+
+  /**
+   * Register type exports
+   *
+   * @default true
+   */
+  types?: boolean
 
   /**
    * Current working directory
@@ -267,6 +281,18 @@ export interface Addon {
   transform?: (this: UnimportContext, code: MagicString, id: string | undefined) => Thenable<MagicString>
   declaration?: (this: UnimportContext, dts: string, options: TypeDeclarationOptions) => Thenable<string>
   matchImports?: (this: UnimportContext, identifiers: Set<string>, matched: Import[]) => Thenable<Import[] | void>
+  /**
+   * Extend or modify the imports list before injecting
+   */
+  extendImports?: (this: UnimportContext, imports: Import[]) => Import[] | void
+  /**
+   * Resolve imports before injecting
+   */
+  injectImportsResolved?: (this: UnimportContext, imports: Import[], code: MagicString, id?: string) => Import[] | void
+  /**
+   * Modify the injection code before injecting
+   */
+  injectImportsStringified?: (this: UnimportContext, injection: string, imports: Import[], code: MagicString, id?: string) => string | void
 }
 
 export interface InstallGlobalOptions {
